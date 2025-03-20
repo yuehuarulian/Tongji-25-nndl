@@ -166,76 +166,42 @@ def weights_init(m):
 ## 4. 实验结果与截图
 
 ### 4.1 训练过程截图
-- 训练过程截图：
+- 训练过程截图,cpu:
 ![alt text](image.png)
 ![alt text](image-1.png)
 
+- 由于cpu训练太慢，后面改成GPU运行，使用screen后端运行
+![alt text](image-2.png)
+![alt text](image-3.png)
+修改代码为
+```py
+gpu_id = "7"
+os.environ["CUDA_VISIBLE_DEVICES"] = gpu_id
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+```
+并将模型和数据'.to(device)'
+
 - 记录每个batch的平均损失，并通过matplotlib绘制训练损失曲线。如下图所示：
-![loss_plot.png](loss_plot.png)  
+<!-- ![loss_plot.png](loss_plot.png)   -->
 *（图中展示了训练过程中损失值随 batch 变化的趋势）*
 
 ### 4.2 生成诗歌示例
-下列为使用不同起始词生成的诗歌示例：
+下列为使用不同起始词生成的诗歌示例，有些失败了
 
-- **起始词 “日”**  
   ```
-  日上苍穹光万丈，
-  云烟绕梁韵悠长，
-  山河壮丽情无尽，
-  世事繁华转瞬逝。
+  inital  linear weight 
+  inital  linear weight 
+  自知终岁后，何必在天中。
+  inital  linear weight 
+  inital  linear weight 
+  夜魏古今年别，一行无事在人间。
+  风光一望无人事，一半黄金作上天。
+  inital  linear weight 
+  inital  linear weight 
+  inital  linear weight 
+  inital  linear weight 
+  何人得相见，一望一何如。
   ```
-  
-- **起始词 “红”**  
-  ```
-  红尘漫漫映斜阳，
-  花开花谢叹流光，
-  梦回江南烟雨路，
-  心随流水归故乡。
-  ```
-
-- **起始词 “山”**  
-  ```
-  山色苍苍入画来，
-  云雾缥缈梦中开，
-  清风拂面情犹在，
-  岁月静好望未来。
-  ```
-
-- **起始词 “夜”**  
-  ```
-  夜阑人静思无限，
-  星光点点洒寒烟，
-  忆起往昔情绵绵，
-  梦里归舟渡远天。
-  ```
-
-- **起始词 “湖”**  
-  ```
-  湖光山色映心扉，
-  微风拂水动轻飞，
-  离愁别绪化流水，
-  余韵悠长意难归。
-  ```
-
-- **起始词 “海”**  
-  ```
-  海阔天空怀浩然，
-  潮起潮落诉流年，
-  梦随波浪寻知己，
-  浪花淘尽是风烟。
-  ```
-
-- **起始词 “月”**  
-  ```
-  月挂中天静无声，
-  清辉洒落映尘情，
-  古道西风添离绪，
-  一缕柔光梦未醒。
-  ```
-
-*注：以上生成的诗句仅为示例，实际效果受模型训练情况和数据集影响。*
-
----
 
 ## 5. 实验总结
 
