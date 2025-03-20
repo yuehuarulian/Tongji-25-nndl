@@ -5,6 +5,7 @@ import torch.nn.functional as F
 
 import numpy as np
 
+# Xavier 均匀初始化
 def weights_init(m):
     classname = m.__class__.__name__  #   obtain the class name
     if classname.find('Linear') != -1:
@@ -17,7 +18,7 @@ def weights_init(m):
         print("inital  linear weight ")
 
 
-class word_embedding(nn.Module):
+class word_embedding(nn.Module): # 定义词嵌入模块
     def __init__(self,vocab_length , embedding_dim):
         super(word_embedding, self).__init__()
         w_embeding_random_intial = np.random.uniform(-1,1,size=(vocab_length ,embedding_dim))
@@ -36,36 +37,41 @@ class RNN_model(nn.Module):
     def __init__(self, batch_sz ,vocab_len ,word_embedding,embedding_dim, lstm_hidden_dim):
         super(RNN_model,self).__init__()
 
-        self.word_embedding_lookup = word_embedding
-        self.batch_size = batch_sz
-        self.vocab_length = vocab_len
-        self.word_embedding_dim = embedding_dim
-        self.lstm_dim = lstm_hidden_dim
+        self.word_embedding_lookup = word_embedding # 保存传入的词嵌入模块，用于将词索引转换为词向量
+        self.batch_size = batch_sz # 保存批次大小
+        self.vocab_length = vocab_len # 保存词汇表大小
+        self.word_embedding_dim = embedding_dim # 保存词嵌入的维度
+        self.lstm_dim = lstm_hidden_dim # 保存 LSTM 隐藏层的维度
         #########################################
         # here you need to define the "self.rnn_lstm"  the input size is "embedding_dim" and the output size is "lstm_hidden_dim"
         # the lstm should have two layers, and the  input and output tensors are provided as (batch, seq, feature)
-        # ???
-
-
+        # 定义 LSTM 层：输入大小为 embedding_dim，输出大小为 lstm_hidden_dim，层数为2，并且 batch_first=True（保证输入输出形状为 (batch, seq, feature)）
+        self.rnn_lstm = nn.LSTM(input_size=embedding_dim,
+                                hidden_size=lstm_hidden_dim, 
+                                num_layers=2, 
+                                batch_first=True)
 
         ##########################################
-        self.fc = nn.Linear(lstm_hidden_dim, vocab_len )
-        self.apply(weights_init) # call the weights initial function.
+        self.fc = nn.Linear(lstm_hidden_dim, vocab_len ) # 定义全连接层，将 LSTM 的输出映射到词汇表大小的维度，用于后续预测下一个词
+        self.apply(weights_init) # call the weights initial function.  # 调用预定义的权重初始化函数，对模型中的权重进行初始化
 
-        self.softmax = nn.LogSoftmax() # the activation function.
+        self.softmax = nn.LogSoftmax() # the activation function.  # 定义 LogSoftmax 激活函数，用于输出概率分布
         # self.tanh = nn.Tanh()
+
     def forward(self,sentence,is_test = False):
         batch_input = self.word_embedding_lookup(sentence).view(1,-1,self.word_embedding_dim)
-        # print(batch_input.size()) # print the size of the input
+        # print(batch_input.size()) # print the size of the input:torch.Size([1, 26, 100])
         ################################################
         # here you need to put the "batch_input"  input the self.lstm which is defined before.
         # the hidden output should be named as output, the initial hidden state and cell state set to zero.
-        # ???
-
-
-
+        # 初始化隐藏状态和细胞状态为零，层数为2
+        h0 = torch.zeros(2, batch_input.size(0), self.lstm_dim)
+        c0 = torch.zeros(2, batch_input.size(0), self.lstm_dim)
+        # 将输入传入 LSTM 层，获得输出和 (hn, cn)
+        output, (hn, cn) = self.rnn_lstm(batch_input, (h0, c0))
 
         ################################################
+        # 将 LSTM 的输出调整形状后传入全连接层
         out = output.contiguous().view(-1,self.lstm_dim)
 
         out =  F.relu(self.fc(out))

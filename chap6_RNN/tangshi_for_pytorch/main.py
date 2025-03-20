@@ -4,7 +4,8 @@ import torch
 from torch.autograd import Variable
 import torch.optim as optim
 
-import rnn
+import rnn as rnn_lstm
+import matplotlib.pyplot as plt
 
 start_token = 'G'
 end_token = 'E'
@@ -118,7 +119,6 @@ def generate_batch(batch_size, poems_vec, word_to_int):
         y_batches.append(y_data)
     return x_batches, y_batches
 
-
 def run_training():
     # 处理数据集
     # poems_vector, word_to_int, vocabularies = process_poems2('./tangshi.txt')
@@ -137,6 +137,7 @@ def run_training():
     loss_fun = torch.nn.NLLLoss()
     # rnn_model.load_state_dict(torch.load('./poem_generator_rnn'))  # if you have already trained your model you can load it by this line.
 
+    loss_history = []  # 用于记录每个 batch 的平均损失
     for epoch in range(30):
         batches_inputs, batches_outputs = generate_batch(BATCH_SIZE, poems_vector, word_to_int)
         n_chunk = len(batches_inputs)
@@ -159,16 +160,26 @@ def run_training():
                     print('*' * 30)
             loss  = loss  / BATCH_SIZE
             print("epoch  ",epoch,'batch number',batch,"loss is: ", loss.data.tolist())
+            loss_history.append(loss.data.item())  # 记录每个 batch 的损失
             optimizer.zero_grad()
             loss.backward()
-            torch.nn.utils.clip_grad_norm(rnn_model.parameters(), 1)
+            torch.nn.utils.clip_grad_norm_(rnn_model.parameters(), 1)
             optimizer.step()
 
             if batch % 20 ==0:
                 torch.save(rnn_model.state_dict(), './poem_generator_rnn')
                 print("finish  save model")
 
-
+    # 训练结束后绘制损失曲线，并保存为图片
+    plt.figure(figsize=(8, 6))
+    plt.plot(loss_history, label='Loss')
+    plt.xlabel('Batch Number')
+    plt.ylabel('Loss')
+    plt.title('Training Loss Curve')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig('loss_plot.png')
+    plt.show()
 
 def to_word(predict, vocabs):  # 预测的结果转化成汉字
     sample = np.argmax(predict)
@@ -177,7 +188,6 @@ def to_word(predict, vocabs):  # 预测的结果转化成汉字
         sample = len(vocabs) - 1
 
     return vocabs[sample]
-
 
 def pretty_print_poem(poem):  # 令打印的结果更工整
     shige=[]
@@ -189,7 +199,6 @@ def pretty_print_poem(poem):  # 令打印的结果更工整
     for s in poem_sentences:
         if s != '' and len(s) > 10:
             print(s + '。')
-
 
 def gen_poem(begin_word):
     # poems_vector, word_int_map, vocabularies = process_poems2('./tangshi.txt')  #  use the other dataset to train the network
@@ -216,10 +225,7 @@ def gen_poem(begin_word):
             break
     return poem
 
-
-
 run_training()  # 如果不是训练阶段 ，请注销这一行 。 网络训练时间很长。
-
 
 pretty_print_poem(gen_poem("日"))
 pretty_print_poem(gen_poem("红"))
