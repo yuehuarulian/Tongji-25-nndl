@@ -167,22 +167,21 @@ def weights_init(m):
 
 ### 4.1 训练过程截图
 - 训练过程截图,cpu:
-![alt text](image.png)
 ![alt text](image-1.png)
 
 - 由于cpu训练太慢，后面改成GPU运行，使用screen后端运行
 ![alt text](image-2.png)
 ![alt text](image-3.png)
-修改代码为
+修改代码
 ```py
 gpu_id = "7"
 os.environ["CUDA_VISIBLE_DEVICES"] = gpu_id
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 ```
-并将模型和数据'.to(device)'
+并将模型和数据加上'.to(device)'
 
 - 记录每个batch的平均损失，并通过matplotlib绘制训练损失曲线。如下图所示：
-<!-- ![loss_plot.png](loss_plot.png)   -->
+![loss_plot.png](tangshi_for_pytorch/loss_plot.png)  
 *（图中展示了训练过程中损失值随 batch 变化的趋势）*
 
 ### 4.2 生成诗歌示例
@@ -206,12 +205,10 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 ## 5. 实验总结
 
 本次实验从数据预处理、模型构建、训练到诗歌生成，完整实现了一个基于 LSTM 的诗歌生成系统。  
-**总结如下：**
 - **数据预处理**：数据清洗、词汇统计和批量生成是后续训练的重要基础；数据质量直接影响生成效果。
 - **模型构建**：利用两层 LSTM 能较好捕捉诗歌的时序信息，通过全连接层和 LogSoftmax 得到预测分布；权重初始化采用 Xavier 均匀初始化，有助于模型收敛。
 - **训练过程**：引入梯度裁剪避免梯度爆炸，并记录训练损失以观察模型学习情况。训练过程中模型参数定期保存，方便后续生成时加载。
 - **诗歌生成**：基于训练好的模型，通过指定起始词逐步生成完整诗歌。生成效果受训练数据、模型结构和超参数影响，后续可进一步改进。
 
-总体来说，本次实验成功实现了诗歌生成的基本流程，并通过实验结果验证了 LSTM 模型在处理序列生成任务中的有效性。接下来，可以考虑进一步优化模型结构（例如尝试 GRU 或混合模型）以及扩充训练数据，以期生成更加优美和符合意境的诗歌。
-
+本次实验成功实现了诗歌生成的基本流程，并通过实验结果验证了 LSTM 模型在处理序列生成任务中的有效性。
 
