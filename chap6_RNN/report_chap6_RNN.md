@@ -99,7 +99,6 @@ def weights_init(m):
         w_bound = np.sqrt(6. / (fan_in + fan_out))
         m.weight.data.uniform_(-w_bound, w_bound)
         m.bias.data.fill_(0)
-        print("inital  linear weight ")
 ```
 
 ### 3.3 模型训练
